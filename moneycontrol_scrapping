@@ -1,0 +1,59 @@
+import requests
+from bs4 import BeautifulSoup
+from nltk.sentiment import SentimentIntensityAnalyzer
+import nltk
+from textblob import TextBlob
+nltk.download('vader_lexicon')
+
+
+# URL of the Moneycontrol news section
+url = 'https://www.moneycontrol.com/news/business/'
+
+# Send a GET request to the URL
+response = requests.get(url)
+
+# Parse the HTML content using BeautifulSoup
+soup = BeautifulSoup(response.content, 'html.parser')
+
+# Find all the news article elements
+articles = soup.find_all('li', class_='clearfix')
+newslist={}
+#print(articles)
+# Iterate over the articles and extract relevant information
+for article in articles:
+    # Extract the article title
+    articles = article.find_all('a')
+    #print(articles)
+    # Extract the article description
+    description = article.find('p').text.strip()
+    for link in articles:
+      href = link.get('href')
+      a=""
+      response1 = requests.get(href)
+
+
+      soup1 = BeautifulSoup(response1.content, 'html.parser')
+
+
+      title1 = soup1.find('div', class_='content_wrapper arti-flow')
+      if title1 is not None:
+        news = title1.find_all('p')
+        for p_tag in news:
+          a=a+p_tag.text
+        
+        newslist[href]=a
+       # print(newslist)
+        break
+
+      
+
+    
+for key, value in newslist.items():
+    # Initialize the sentiment analyzer
+  sid = SentimentIntensityAnalyzer()
+
+  sentiment_scores = sid.polarity_scores(value)
+  print(key,sentiment_scores)
+
+# Print the sentiment scores
+
